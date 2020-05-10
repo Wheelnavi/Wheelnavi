@@ -74,6 +74,7 @@ class Ex:
         plt.imshow(result, interpolation='nearest')
 
         plt.show()
+        return result
 
 
     def make_noise(self):
@@ -161,7 +162,7 @@ class Ex:
         return stroke
 
 
-def execute_FEGAN(mask,sketch,stroke,image=None,read=True):
+def execute_FEGAN(mask,sketch,stroke,imagename,image=None,read=True):
     config = fegan.utils.config.Config('config.yaml')
     os.environ["CUDA_VISIBLE_DEVICES"] = str(config.GPU_NUM)
     model = Model(config)
@@ -171,4 +172,6 @@ def execute_FEGAN(mask,sketch,stroke,image=None,read=True):
         ex.open(image = image)
     else:
         ex.open('img_1701.png')
-    ex.complete(mask,sketch,stroke,read)
+    rebuildimg = ex.complete(mask,sketch,stroke,read)
+    cv2.imwrite('data/rebulit/'+imagename,rebuildimg)
+    return rebuildimg

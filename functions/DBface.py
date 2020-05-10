@@ -148,7 +148,7 @@ def detect_singleimage(image,name):
 
     for obj in objs:
         print(obj.landmark)
-        f = open('landmarks/'+name+'.txt','w')
+        f = open('data/landmarks/'+name+'.txt','w')
         for land in obj.landmark:
             print(land[0],land[1])
             f.write("{} {}\n".format(int(land[0]),int(land[1])))
@@ -156,11 +156,11 @@ def detect_singleimage(image,name):
 
         objts = detect(model,facealligner(image,obj.landmark[1],obj.landmark[0],name))
         for objt in objts:
-            f = open('landmarks/'+name+'alligned.txt','w')
+            f = open('data/landmarks/'+name+'alligned.txt','w')
             for land in objt.landmark:
                 f.write("{} {}\n".format(int(land[0]),int(land[1])))
             f.close()
 
         dbfacecommon.common.drawbbox(image, obj)
+    dbfacecommon.common.imwrite("data/detect_results/" + name + ".draw.jpg", image)
     return image
-    dbfacecommon.common.imwrite("detect_results/" + name + ".draw.jpg", image)

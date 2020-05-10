@@ -79,15 +79,15 @@ def APDrawingGan(imagepath,savepath,imagename,landmarkdir,maskdir):
     for i, data in enumerate(dataset):
         if i >= opt.how_many:  # test code only supports batch_size = 1, how_many means how many test images to run
             break
-        model.set_input(data)
-        model.test()
         # in test the loadSize is set to the same as fineSize
-        visuals = model.get_current_visuals()
         short_path = ntpath.basename(imagepath[0])
         name = os.path.splitext(short_path)[0]
         aspect_ratio=1.0
         width=256
         if name in imagename:
+            model.set_input(data)
+            model.test()
+            visuals = model.get_current_visuals()
             for label, im_data in visuals.items():
                 im = util.tensor2im(im_data)#tensor to numpy array [-1,1]->[0,1]->[0,255]
                 image_name = '%s_%s.png' % (name, label)

@@ -35,9 +35,6 @@ def decode_segmap(image, nc=21):
 
 def segment(img,path):
   net = models.segmentation.fcn_resnet101(pretrained=True).eval()
-  #img = Image.open(path)
-  #plt.imshow(img); plt.axis('off'); plt.show()
-  # Comment the Resize and CenterCrop for better inference results
   trf = T.Compose([T.Resize(512), 
                    T.CenterCrop(512), 
                    T.ToTensor(), 
@@ -51,6 +48,5 @@ def segment(img,path):
 
   if path:
     cv2.imwrite(path,rgb)
-    #plt.imshow(rgb); plt.axis('off'); plt.show()
   else:
     return rgb

@@ -1,7 +1,8 @@
 from django.shortcuts import render
+from functions.dependency_imports import *
 import functions.basefunction as base
 from reface_main.serializers import *
-
+from functions.onetake import *
 # Create your views here.
 @api_view(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 def UserResponse(request, url=None, extra=None):
@@ -10,6 +11,10 @@ def UserResponse(request, url=None, extra=None):
         mode = request.get('mode')
         if authorized:
             if mode == 'inference':
+                image_name = request.get('image')
+                user_code = request.get('user_code')
+
+                onetake(user_code,image_name,dbface=True,readdat=True)
                 return base.Custom_Response(502,'not implemented')
             else:
                 return base.Custom_Response(502,'not implemented')
@@ -20,7 +25,9 @@ def UserResponse(request, url=None, extra=None):
         if authorized:
             landmark = request.pop('landmark_file',None)
             rebuild = request.pop('rebuild_file',None)
-            origin = request.pop('origin_picture',None)
+            origin = request.pop('origin_file',None)
+            mask = request.pop('mask_file',None)
+            stroke = request.pop('stroke_file',None)
             newuser = UserSerializer(request)
             if newuser.is_valid():
                 newuserobj = newuser.save()
@@ -29,7 +36,11 @@ def UserResponse(request, url=None, extra=None):
                 if rebuild:
                     newuserobj.rebuild_file=rebuild[0]
                 if origin:
-                    newuserobj.origin_picture= origin[0]
+                    newuserobj.origin_file= origin[0]
+                if mask:
+                    newuserobj.mask_file= mask[0]
+                if stroke:
+                    newuserobj.stroke_file= stroke[0]
                 newuserobj.save()
                 return base.Custom_Response(201,newuser.data)
             else:
