@@ -1,10 +1,9 @@
 from __future__ import absolute_import
-import DBface
-import segment
-import FEGAN
-import APDrawingGan
-from dependency_imports import *
-from google.cloud import storage
+import functions.DBface
+import functions.segment
+import functions.FEGAN
+import functions.APDrawingGan
+from functions.dependency_imports import *
 
 def onetake(originname,mask,stroke,dbface = False,readdat = False):
     if readdat:

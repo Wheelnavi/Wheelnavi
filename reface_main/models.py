@@ -20,15 +20,15 @@ class User(AbstractBaseUser, models.Model):
     account = models.CharField(max_length=30, default='')
 
     landmark_file = models.FileField(
-        upload_to=landmark_directory_path, default=None, blank=True)
+        upload_to=landmark_directory_path, default=None, blank=True,null=True)
     rebuild_file = models.FileField(
-        upload_to=rebuild_part_directory_path, default=None, blank=True)
+        upload_to=rebuild_part_directory_path, default=None, blank=True,null=True)
     mask_file = models.FileField(
-        upload_to=mask_part_directory_path, default=None, blank=True)
+        upload_to=mask_part_directory_path, default=None, blank=True,null=True)
     stroke_file = models.FileField(
-        upload_to=stroke_part_directory_path, default=None, blank=True)
+        upload_to=stroke_part_directory_path, default=None, blank=True,null=True)
     origin_file = models.FileField(
-        upload_to=origin_picture_directory_path, default=None, blank=True)
+        upload_to=origin_picture_directory_path, default=None, blank=True,null=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

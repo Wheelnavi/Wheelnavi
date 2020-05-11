@@ -1,8 +1,8 @@
-import dependency_imports
+from functions.dependency_imports import *
+
+from DBFace.model.DBFace import DBFace
+from DBFace.common import *
 HAS_CUDA = torch.cuda.is_available()
-sys.path.append('..')
-dbfacemod = __import__('DBFace.model.DBFace')
-dbfacecommon = __import__('DBFace.common')
 def nms(objs, iou=0.5):
 
     if objs is None or len(objs) <= 1:

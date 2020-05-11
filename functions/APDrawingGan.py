@@ -1,10 +1,9 @@
-import functions.dependency_imports
-sys.path.append('../APDrawingGAN/')
-sys.path.append('../APDrawingGAN/models')
-sys.path.append('..')
-utilhtml = importlib.import_module('APDrawingGAN.util.html')
-utilvisualizer = importlib.import_module('APDrawingGAN.util.visualizer')
-apdata = importlib.import_module('APDrawingGAN.data')
+from functions.dependency_imports import *
+sys.path.append('APDrawingGAN')
+from APDrawingGAN.util import util,html,visualizer
+from APDrawingGAN.options import test_options
+from APDrawingGAN.data import *
+from APDrawingGAN.models import *
 optionstest = importlib.import_module('APDrawingGAN.options.test_options')
 apmodel = importlib.import_module('APDrawingGAN.models')
 

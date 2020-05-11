@@ -1,8 +1,8 @@
 import functions.dependency_imports
 
-sys.path.append('..')
 fegan = __import__('SC-FEGAN.utils.config')
-from model import Model
+
+from functions.model import Model
 
 
 
