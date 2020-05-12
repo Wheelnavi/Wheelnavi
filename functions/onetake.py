@@ -53,7 +53,7 @@ def remove_image_from_local(mode_type,user_code,originname,all=False):
     if all:
         os.remove('data/mask/'+str(user_code)+'_'+originname)
         os.remove('data/stroke/'+str(user_code)+'_'+originname)
-        os.remove('data/landmark/'+str(user_code)+'_'+originname)
+        #os.remove('data/landmark/'+str(user_code)+'_'+originname)
         os.remove('data/rebuild/'+str(user_code)+'_'+originname)
     else:
         os.remove('data/'+mode_type+'/'+str(user_code)+'_'+originname)

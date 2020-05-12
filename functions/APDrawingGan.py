@@ -94,12 +94,13 @@ def APDrawingGan(imagepath,savepath,imagename,landmarkdir,maskdir):
             visuals = model.get_current_visuals()
             for label, im_data in visuals.items():
                 im = util.tensor2im(im_data)#tensor to numpy array [-1,1]->[0,1]->[0,255]
-                image_name = '%s_%s.png' % (name, label)
-                save_path = os.path.join(savepath, image_name)
-                h, w, _ = im.shape
-                if aspect_ratio > 1.0:
-                    im = cv2.imresize(im, (h, int(w * aspect_ratio)), interp='bicubic')
-                if aspect_ratio < 1.0:
-                    im = cv2.imresize(im, (int(h / aspect_ratio), w), interp='bicubic')
-                util.save_image(im, save_path)
+                if 'fake' in label:
+                    image_name = imagename
+                    save_path = os.path.join(savepath, image_name)
+                    h, w, _ = im.shape
+                    if aspect_ratio > 1.0:
+                        im = cv2.imresize(im, (h, int(w * aspect_ratio)), interp='bicubic')
+                    if aspect_ratio < 1.0:
+                        im = cv2.imresize(im, (int(h / aspect_ratio), w), interp='bicubic')
+                    util.save_image(im, save_path)
 
