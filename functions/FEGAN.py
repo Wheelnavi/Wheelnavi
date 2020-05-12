@@ -74,7 +74,7 @@ class Ex:
         plt.imshow(result, interpolation='nearest')
 
         plt.show()
-        return result
+        return self.output_img
 
 
     def make_noise(self):
@@ -113,7 +113,7 @@ class Ex:
             if read:
                 src = cv2.imread(sketchsrc)
             else:
-                src = sketchsrc            
+                src = sketchsrc
             src = cv2.resize(src, (512, 512), interpolation=cv2.INTER_CUBIC)
             dst = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
             dst = cv2.bitwise_not(dst)
@@ -141,7 +141,7 @@ class Ex:
                 src = cv2.imread(strokesrc,flags =cv2.IMREAD_COLOR)
             else:
                 src = strokesrc
-#            src = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)
+            src = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)
             src = cv2.bitwise_not(src)
 
             src = cv2.resize(src, (512, 512), interpolation=cv2.INTER_CUBIC)
@@ -170,8 +170,6 @@ def execute_FEGAN(mask,sketch,stroke,imagename,image=None,read=True):
     ex = Ex(model, config)
     if image is not None:
         ex.open(image = image)
-    else:
-        ex.open('img_1701.png')
     rebuildimg = ex.complete(mask,sketch,stroke,read)
     cv2.imwrite('data/result/'+imagename,rebuildimg)
     return 'data/result/'+imagename

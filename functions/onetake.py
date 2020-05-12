@@ -51,22 +51,24 @@ def load_image_from_gcs(user_code,mode_type,originname):
 
 def remove_image_from_local(mode_type,user_code,originname,all=False):
     if all:
-        os.remove('data/mask/'+str(user_code)+'_'+originname)
-        os.remove('data/stroke/'+str(user_code)+'_'+originname)
+        #os.remove('data/mask/'+str(user_code)+'_'+originname)
+        #os.remove('data/stroke/'+str(user_code)+'_'+originname)
         #os.remove('data/landmark/'+str(user_code)+'_'+originname)
-        os.remove('data/rebuild/'+str(user_code)+'_'+originname)
+        #os.remove('data/rebuild/'+str(user_code)+'_'+originname)
+        pass
     else:
-        os.remove('data/'+mode_type+'/'+str(user_code)+'_'+originname)
+        #os.remove('data/'+mode_type+'/'+str(user_code)+'_'+originname)
+        pass
     return 1
 
-def onetake_gcs(user_code,originname,dbface = False,readdat = True):
+def onetake_gcs(user_code,originname,dbface = False,readdat = True,origin=False):
     userimage = user_code+'_'+originname
     if readdat:
         load_image_from_gcs(user_code,'mask',originname)
         mask = cv2.imread('data/mask/'+userimage)
         strokestat = load_image_from_gcs(user_code,'stroke',originname)
         stroke = cv2.imread('data/stroke/'+userimage)
-        load_image_from_gcs(user_code,'landmark',originname)
+        load_image_from_gcs(user_code,'landmark',os.path.splitext(originname)[0]+'.txt')
         if strokestat == 404:
             stroke = None
     
@@ -77,8 +79,16 @@ def onetake_gcs(user_code,originname,dbface = False,readdat = True):
     #please save landmark before this
     if dbface:
         DBFace.detect_singleimage(rebuild_path,userimage)
+    if origin:
+        load_image_from_gcs(user_code,'origin',originname)
+        originimageread_pid = Image.open('data/origin/'+userimage)
+    else:
+        originimageread_pil = Image.open(rebuild_path)
     make_segment(originimageread_pil,'data/segment/'+userimage)
-    sketch_image(userimage)
+    if origin:
+        sketch_image(userimage)
+    else:
+        sketch_image(userimage,foldername = 'data/origin/')
     sketch = cv2.imread('data/sketch/'+userimage)
     save_image_to_gcs(user_code,'sketch',originname,'data/sketch/'+userimage)
     rebuildimg = FEGAN.execute_FEGAN(mask,sketch,stroke,userimage,image = originimageread,read=False)

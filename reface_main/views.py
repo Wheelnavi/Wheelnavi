@@ -14,7 +14,10 @@ def UserResponse(request, url=None, extra=None):
                 image_name = request.get('image')
 
                 onetake_gcs(str(authorize_object.user_code),image_name,dbface=True,readdat=True)
-                return base.Custom_Response(502,'not implemented')
+                return base.Custom_Response(200,'done')
+            elif mode == 'inference_origin':
+                image_name = request.get('image')
+                onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,origin=True)
             else:
                 return base.Custom_Response(502,'not implemented')
         else:
@@ -44,14 +47,18 @@ def UserResponse(request, url=None, extra=None):
             return response
     elif request.method == 'PUT':
         authorized, authorize_object, response, request = base.Authorize_session(request)
+        mode = request.get('mode')
         if authorized:
             pass
         else:
             return response
     elif request.method == 'PATCH':
         authorized, authorize_object, response, request = base.Authorize_session(request)
+        mode = request.get('mode')
         if authorized:
-            pass
+            if mode == 'sketch_picture':
+                pass
+
         else:
             return response
     elif request.method == 'DELETE':

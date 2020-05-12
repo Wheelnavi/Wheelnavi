@@ -26,7 +26,7 @@ class Model(object):
         self.noises = tf.placeholder(
             self.dtype, [self.batch_size] + noises_dims, name='noises')
 
-    def build_gen(self, x, mask, name='generator',reuse=False, trainig=True):
+    def build_gen(self, x, mask, name='generator',reuse=tf.AUTO_REUSE, trainig=True):
         cnum = 64
         s_h, s_w = self.input_size, self.input_size
         s_h2, s_w2 = int(self.input_size/2), int(self.input_size/2)

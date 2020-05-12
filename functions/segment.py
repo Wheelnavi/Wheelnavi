@@ -34,6 +34,7 @@ def decode_segmap(image, nc=21):
   return rgb
 
 def segment(img,path):
+  img = img.resize((512,512))
   net = models.segmentation.fcn_resnet101(pretrained=True).eval()
   trf = T.Compose([T.Resize(512), 
                    T.CenterCrop(512), 
