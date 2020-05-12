@@ -1,4 +1,4 @@
-import functions.dependency_imports
+from functions.dependency_imports import *
 
 fegan = __import__('SC-FEGAN.utils.config')
 
@@ -31,7 +31,7 @@ class Ex:
             print(mat_img)
             plt.imshow(mat_img, interpolation='nearest')
             plt.show()
-        elif image:
+        elif image is not None:
             mat_img = cv2.resize(image, (512, 512), interpolation=cv2.INTER_CUBIC)
             mat_img = mat_img/127.5 - 1
             self.mat_img = np.expand_dims(mat_img,axis=0)
@@ -85,7 +85,7 @@ class Ex:
         return noise
 
     def make_mask(self, masksrc, read=True):
-        if masksrc:
+        if masksrc is not None:
             if read:
                 src = cv2.imread(masksrc)
             else:
@@ -109,7 +109,7 @@ class Ex:
         return mask
 
     def make_sketch(self, sketchsrc, read=True): #black line
-        if sketchsrc:
+        if sketchsrc is not None:
             if read:
                 src = cv2.imread(sketchsrc)
             else:
@@ -135,7 +135,7 @@ class Ex:
         return sketch
 
     def make_stroke(self, strokesrc, read=True): #RGB format
-        if strokesrc:
+        if strokesrc is not None:
             stroke = np.zeros((512,512,3))
             if read:
                 src = cv2.imread(strokesrc,flags =cv2.IMREAD_COLOR)
@@ -163,15 +163,15 @@ class Ex:
 
 
 def execute_FEGAN(mask,sketch,stroke,imagename,image=None,read=True):
-    config = fegan.utils.config.Config('config.yaml')
+    config = fegan.utils.config.Config('functions/config.yaml')
     os.environ["CUDA_VISIBLE_DEVICES"] = str(config.GPU_NUM)
     model = Model(config)
 
     ex = Ex(model, config)
-    if image:
+    if image is not None:
         ex.open(image = image)
     else:
         ex.open('img_1701.png')
     rebuildimg = ex.complete(mask,sketch,stroke,read)
-    cv2.imwrite('data/rebulit/'+imagename,rebuildimg)
-    return rebuildimg
+    cv2.imwrite('data/result/'+imagename,rebuildimg)
+    return 'data/result/'+imagename

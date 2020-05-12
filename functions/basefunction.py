@@ -1,4 +1,6 @@
 from reface_main.models import *
+from functions.dependency_imports import *
+from functions.non_dependency import *
 def Custom_Response(status, string=''):
     if status == 200:
         status = Status.HTTP_200_OK
@@ -42,7 +44,7 @@ def Custom_Response(status, string=''):
 
 def Findaccount(caccount):  # really find account object
     try:
-        return User.objects.get(account=caccount).select_subclasses()
+        return User.objects.get(account=caccount)
     except User.DoesNotExist:
         return None
 
@@ -73,14 +75,10 @@ def login(request):
     if authorized != 1:
         response = Custom_Response(401, 'id/password')
 
-    if authorize_object:
-        base_response['account_code'] = authorize_object.account_code
-    else:
-        base_response['account_code'] = account
     return authorized, authorize_object, response
 
 
-def Authorize_session(request, restriction=3, specific=[-1]):
+def Authorize_session(request,restriction=3, specific=[-1]):
     authorized = 0
     authorize_object = None
     response = None
@@ -103,8 +101,4 @@ def Authorize_session(request, restriction=3, specific=[-1]):
 
 
     request = gen_request_code(request_method.copy(), request.FILES)
-    if authorize_object:
-        base_response['account_code'] = authorize_object.account_code
-    else:
-        base_response['account_code'] = 'session'
     return authorized, authorize_object, response, request

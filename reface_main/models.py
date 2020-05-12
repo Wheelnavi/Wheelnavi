@@ -7,12 +7,12 @@ def rebuild_part_directory_path(instance, filename):
     return 'user_{}/rebuild/{}'.format(instance.user_code, filename)
 
 def mask_part_directory_path(instance, filename):
-    return 'user_{}/mask/{}'.format(instance.user_code, str(datetime.now())+filename)
+    return 'user_{}/mask/{}'.format(instance.user_code, filename)
 def stroke_part_directory_path(instance, filename):
-    return 'user_{}/stroke/{}'.format(instance.user_code, str(datetime.now())+filename)
+    return 'user_{}/stroke/{}'.format(instance.user_code,filename)
 
 def origin_picture_directory_path(instance, filename):
-    return 'user_{}/origin/{}'.format(instance.user_code, str(datetime.now())+filename)
+    return 'user_{}/origin/{}'.format(instance.user_code,filename)
 
 
 class User(AbstractBaseUser, models.Model):
@@ -20,15 +20,15 @@ class User(AbstractBaseUser, models.Model):
     account = models.CharField(max_length=30, default='')
 
     landmark_file = models.FileField(
-        upload_to=landmark_directory_path, default=None, blank=True,null=True)
+        upload_to=landmark_directory_path, default=None, blank=True)
     rebuild_file = models.FileField(
-        upload_to=rebuild_part_directory_path, default=None, blank=True,null=True)
+        upload_to=rebuild_part_directory_path, default=None, blank=True)
     mask_file = models.FileField(
-        upload_to=mask_part_directory_path, default=None, blank=True,null=True)
+        upload_to=mask_part_directory_path, default=None, blank=True)
     stroke_file = models.FileField(
-        upload_to=stroke_part_directory_path, default=None, blank=True,null=True)
+        upload_to=stroke_part_directory_path, default=None, blank=True)
     origin_file = models.FileField(
-        upload_to=origin_picture_directory_path, default=None, blank=True,null=True)
+        upload_to=origin_picture_directory_path, default=None, blank=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

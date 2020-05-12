@@ -2,18 +2,25 @@ from functions.dependency_imports import *
 sys.path.append('APDrawingGAN')
 from APDrawingGAN.util import util,html,visualizer
 from APDrawingGAN.options import test_options
-from APDrawingGAN.data import *
-from APDrawingGAN.models import *
-optionstest = importlib.import_module('APDrawingGAN.options.test_options')
-apmodel = importlib.import_module('APDrawingGAN.models')
+import APDrawingGAN.data as apdata
+import APDrawingGAN.models as apmodel
+import traceback
 
-class Options(optionstest.TestOptions):
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open('loggg.txt', 'w')
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
+
+class Options(test_options.TestOptions):
     def __init__(self,parser):
         self.parser = parser
         super().initialize(self.parser)
 
     def gather_options(self):
-        # initialize parser with basic options
+        # initialize parser with basic optiona
         if not self.initialized:
             parser = argparse.ArgumentParser(
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -36,8 +43,7 @@ class Options(optionstest.TestOptions):
         parser = dataset_option_setter(parser, self.isTrain)
 
         self.parser = parser
-
-        return parser.parse_args()
+        return parser.parse_known_args()[0]
 
 def remove_option(parser, arg):
     for action in parser._actions:
@@ -59,11 +65,10 @@ def APDrawingGan(imagepath,savepath,imagename,landmarkdir,maskdir):
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     opt = Options(parser)
     remove_option(opt.parser,'dataroot')
+    opt.parser.set_defaults(dataroot=imagepath, name='formal_author',checkpoints_dir='checkpoints/',lm_dir=landmarkdir,bg_dir=maskdir, model='test', dataset_mode='single', norm='batch', which_epoch=300, gpu_ids='-1')
 
-    print(opt.parser.parse_args())
-    opt.parser.set_defaults(dataroot=imagepath, name='formal_author',checkpoints_dir='../checkpoints',lm_dir=landmarkdir,bg_dir=maskdir, model='test', dataset_mode='single', norm='batch', which_epoch=300, gpu_ids='-1')
-    print(opt.parser.parse_args())
-    opt = opt.parse()
+    with HiddenPrints():
+        opt = opt.parse()
     opt.use_local = True
     opt.num_threads = 1   # test code only supports num_threads = 1
     opt.batch_size = 1  # test code only supports batch_size = 1

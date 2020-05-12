@@ -23,7 +23,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from dateutil.relativedelta import relativedelta
 from matplotlib import pyplot as plt
-
+from PIL import Image
+from pathlib import Path
 import drf_extra_fields.fields as drf_extra
 import pandas as pd
 import psycopg2
@@ -34,7 +35,7 @@ from django.core.exceptions import *
 from django.core.mail import EmailMessage
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import IntegrityError, connection, models, reset_queries
-from django.db.models import CheckConstraint, F, Max, Q, Sum
+from django.db.models import CheckConstraint,Max, Q, Sum
 from django.db.models.functions import TruncDay
 from django.http import QueryDict
 from django.utils.datastructures import MultiValueDict, MultiValueDictKeyError

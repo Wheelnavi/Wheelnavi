@@ -12,9 +12,8 @@ def UserResponse(request, url=None, extra=None):
         if authorized:
             if mode == 'inference':
                 image_name = request.get('image')
-                user_code = request.get('user_code')
 
-                onetake(user_code,image_name,dbface=True,readdat=True)
+                onetake_gcs(str(authorize_object.user_code),image_name,dbface=True,readdat=True)
                 return base.Custom_Response(502,'not implemented')
             else:
                 return base.Custom_Response(502,'not implemented')
@@ -23,28 +22,24 @@ def UserResponse(request, url=None, extra=None):
     elif request.method == 'POST':
         authorized, authorize_object, response, request = base.Authorize_session(request)
         if authorized:
+            
             landmark = request.pop('landmark_file',None)
             rebuild = request.pop('rebuild_file',None)
             origin = request.pop('origin_file',None)
             mask = request.pop('mask_file',None)
             stroke = request.pop('stroke_file',None)
-            newuser = UserSerializer(request)
-            if newuser.is_valid():
-                newuserobj = newuser.save()
-                if landmark:
-                    newuserobj.landmark_file = landmark[0]
-                if rebuild:
-                    newuserobj.rebuild_file=rebuild[0]
-                if origin:
-                    newuserobj.origin_file= origin[0]
-                if mask:
-                    newuserobj.mask_file= mask[0]
-                if stroke:
-                    newuserobj.stroke_file= stroke[0]
-                newuserobj.save()
-                return base.Custom_Response(201,newuser.data)
-            else:
-                return base.Custom_Response(406,newuser.errors)
+            if landmark:
+                authorize_object.landmark_file = landmark[0]
+            if rebuild:
+                authorize_object.rebuild_file=rebuild[0]
+            if origin:
+                authorize_object.origin_file= origin[0]
+            if mask:
+                authorize_object.mask_file= mask[0]
+            if stroke:
+                authorize_object.stroke_file= stroke[0]
+            authorize_object.save()
+            return base.Custom_Response(201,UserSerializer(authorize_object).data)
         else:
             return response
     elif request.method == 'PUT':
