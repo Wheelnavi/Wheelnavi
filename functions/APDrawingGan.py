@@ -84,23 +84,20 @@ def APDrawingGan(imagepath,savepath,imagename,landmarkdir,maskdir):
         if i >= opt.how_many:  # test code only supports batch_size = 1, how_many means how many test images to run
             break
         # in test the loadSize is set to the same as fineSize
-        short_path = ntpath.basename(imagepath[0])
-        name = os.path.splitext(short_path)[0]
         aspect_ratio=1.0
         width=256
-        if name in imagename:
-            model.set_input(data)
-            model.test()
-            visuals = model.get_current_visuals()
-            for label, im_data in visuals.items():
-                im = util.tensor2im(im_data)#tensor to numpy array [-1,1]->[0,1]->[0,255]
-                if 'fake' in label:
-                    image_name = imagename
-                    save_path = os.path.join(savepath, image_name)
-                    h, w, _ = im.shape
-                    if aspect_ratio > 1.0:
-                        im = cv2.imresize(im, (h, int(w * aspect_ratio)), interp='bicubic')
-                    if aspect_ratio < 1.0:
-                        im = cv2.imresize(im, (int(h / aspect_ratio), w), interp='bicubic')
-                    util.save_image(im, save_path)
+        model.set_input(data)
+        model.test()
+        visuals = model.get_current_visuals()
+        for label, im_data in visuals.items():
+            im = util.tensor2im(im_data)#tensor to numpy array [-1,1]->[0,1]->[0,255]
+            if 'fake' in label:
+                image_name = imagename
+                save_path = os.path.join(savepath, image_name)
+                h, w, _ = im.shape
+                if aspect_ratio > 1.0:
+                    im = cv2.imresize(im, (h, int(w * aspect_ratio)), interp='bicubic')
+                if aspect_ratio < 1.0:
+                    im = cv2.imresize(im, (int(h / aspect_ratio), w), interp='bicubic')
+                util.save_image(im, save_path)
 

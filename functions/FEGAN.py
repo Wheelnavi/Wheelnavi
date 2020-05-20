@@ -28,7 +28,6 @@ class Ex:
             mat_img = cv2.resize(mat_img, (512, 512), interpolation=cv2.INTER_CUBIC)
             mat_img = mat_img/127.5 - 1
             self.mat_img = np.expand_dims(mat_img,axis=0)
-            print(mat_img)
             plt.imshow(mat_img, interpolation='nearest')
             plt.show()
         elif image is not None:
@@ -64,7 +63,6 @@ class Ex:
         start_t = time.time()
         result = self.model.demo(self.config, batch)
         end_t = time.time()
-        print('inference time : {}'.format(end_t-start_t))
         result = (result+1)*127.5
         result = np.asarray(result[0,:,:,:],dtype=np.uint8)
         self.output_img = result
@@ -120,7 +118,6 @@ class Ex:
 
 #            dst = (dst != 0)
             #dst = np.repeat(dst[:, :, np.newaxis], 3, axis=2)
-            print(dst)
             sketch = np.asarray(dst[:,:]/255,dtype=np.uint8)
             plt.imshow(dst, interpolation='nearest')
             plt.show()
@@ -152,7 +149,6 @@ class Ex:
             stroke = src/127.5 - 1
 
             stroke = np.expand_dims(stroke,axis=0)
-            print(stroke)
 
         else:
             stroke = np.zeros((512,512,3))

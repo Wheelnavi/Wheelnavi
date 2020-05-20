@@ -11,7 +11,7 @@
                    bg_dir: /home/bettermind96/reface/reface/data/segment/
           checkpoints_dir: checkpoints/                  
                   comb_op: 1                             
-                 dataroot: data/rebuild/                 
+                 dataroot: data/origin/                  
              dataset_mode: single                        
               display_env: main                          
                display_id: 1                             

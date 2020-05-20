@@ -4,9 +4,6 @@
 [submodule "SC-FEGAN"]
 	path = SC-FEGAN
 	url = https://github.com/run-youngjoo/SC-FEGAN.git
-[submodule "DeepFaceLab"]
-	path = DeepFaceLab
-	url = https://github.com/iperov/DeepFaceLab.git
 [submodule "DBFace"]
 	path = DBFace
 	url = https://github.com/dlunion/DBFace.git

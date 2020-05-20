@@ -18,6 +18,7 @@ def UserResponse(request, url=None, extra=None):
             elif mode == 'inference_origin':
                 image_name = request.get('image')
                 onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,origin=True)
+                return base.Custom_Response(200,'done')
             else:
                 return base.Custom_Response(502,'not implemented')
         else:
