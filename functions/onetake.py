@@ -63,7 +63,7 @@ def remove_image_from_local(mode_type,user_code,originname,all=False):
     return 1
 
 def preprocess(user_code, originname):
-    numpyarr = CropFace.crop_and_average('data/rebuild/'+str(user_code)+'_'+originname,'data/origin/')
+    numpyarr = PreProcess.CropFace.crop_and_average('data/rebuild/'+str(user_code)+'_'+originname,'data/origin/')
     remove_image_from_local('origin',user_code,originname)
     #file.save numpyarr
 def onetake_gcs(user_code,originname,dbface = False,readdat = True,origin=False):

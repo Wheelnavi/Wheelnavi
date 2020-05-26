@@ -8,3 +8,7 @@
 	path = DBFace
 	url = https://github.com/dlunion/DBFace.git
 	ignore = dirty
+[submodule "re_face_preprocessing"]
+	path = re_face_preprocessing
+	url = https://github.com/re-face/re_face_preprocessing.git
+	branch = master2
