@@ -4,7 +4,7 @@ import functions.segment as segment
 import functions.FEGAN as FEGAN
 import functions.APDrawingGan as APDrawingGAN
 from functions.dependency_imports import *
-from functions.re_face_preprocessing import CropFace
+import re_face_preprocessing as PreProcess
 def onetake(originname,mask,stroke,dbface = False,readdat = False):
     if readdat:
         mask = cv2.imread('extra/mask.png')
