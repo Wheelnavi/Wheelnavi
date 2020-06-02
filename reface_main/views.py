@@ -12,7 +12,9 @@ def UserResponse(request, url=None, extra=None):
         if authorized:
             if mode == 'inference':
                 image_name = request.get('image')
-
+                image_name = Image.open(image_name)
+                image_name.save('hi.png')
+                raise AttributeError(type(image_name))
                 onetake_gcs(str(authorize_object.user_code),image_name,dbface=True,readdat=True)
                 return base.Custom_Response(200,'done')
             elif mode == 'inference_origin':
