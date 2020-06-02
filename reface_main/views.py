@@ -26,7 +26,7 @@ def UserResponse(request, url=None, extra=None):
                     preprocess_images.append(Image.open(oneImage))
                 rebuild_image = Image.open(request.get('rebuildimage'))
                 mask_image = Image.open(request.get('maskimage'))
-                preprocess(authorize_object.user_code,rebuild_image,preprocess_images,mask_image,None)
+                return preprocess(authorize_object.user_code,rebuild_image,preprocess_images,mask_image,None)
 
                 #onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,preprocess=True)
                 return base.Custom_Response(200,'done')

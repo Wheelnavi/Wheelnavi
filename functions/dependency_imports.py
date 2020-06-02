@@ -14,6 +14,7 @@ from collections.abc import Iterable
 from datetime import date, datetime, timedelta
 from itertools import chain
 import ntpath
+from django.http import HttpResponse
 
 import cv2
 import numpy as np

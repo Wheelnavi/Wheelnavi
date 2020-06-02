@@ -68,7 +68,11 @@ def preprocess(user_code,rebuildimage_rcv,originimages_rcv,fmask_rcv,stroke_rcv)
     #rebuildimages -> to be fixed
     #originimages -> original images
     userimage = str(user_code)+'.png'
+
     rebuildimage = rebuildimage_rcv.convert('RGB')
+    rebuildimage.save('data/input/'+userimage)
+    save_image_to_gcs(str(user_code),'input',str(user_code)+'.png','data/input/'+str(user_code)+'.png')
+
     originimages_cvt = []
     for oneimage in originimages_rcv:
         originimages_cvt.append(oneimage.convert('RGB'))
@@ -77,20 +81,24 @@ def preprocess(user_code,rebuildimage_rcv,originimages_rcv,fmask_rcv,stroke_rcv)
     swappedface = faceswapbymask.pil_preprocessing(averageimg,croppedimg,np.array(fmask))
     # cv2.imwrite('swappedface.png',swappedface)
     cv2.imwrite('data/origin/'+userimage,swappedface)
-    save_image_to_gcs(str(user_code),'origin',str(user_code)+'.png','data/origin'+str(user_code)+'.png')
+    save_image_to_gcs(str(user_code),'origin',str(user_code)+'.png','data/origin/'+str(user_code)+'.png')
     cv2.imwrite('data/rebuild/'+userimage,croppedimg)
-    save_image_to_gcs(str(user_code),'origin',str(user_code)+'.png','data/origin'+str(user_code)+'.png')
+    save_image_to_gcs(str(user_code),'rebuild',str(user_code)+'.png','data/rebuild/'+str(user_code)+'.png')
 
     with open("data/landmark/{}.txt".format(user_code), "w") as f:
         for point in points:
-            text = str(point[0])+' '+str(point[1])
+            text = str(point[0])+' '+str(point[1])+'\n'
             f.write(text)
-    originimageread_pil = Image.open('data/rebuild/'+userimage)
+    originimageread_pil = Image.open('data/origin/'+userimage)
     make_segment(originimageread_pil,'data/segment/'+userimage)
     sketch_image(userimage,foldername = 'data/origin/')
     sketch = cv2.imread('data/sketch/'+userimage)
-    save_image_to_gcs(user_code,'sketch',userimage,'data/sketch/'+userimage)
-    rebuildimg = FEGAN.execute_FEGAN(fmask_rcv.copy(),sketch,stroke_rcv.copy(),userimage,image = originimages_rcv.copy(),read=False)
+    save_image_to_gcs(str(user_code),'sketch',userimage,'data/sketch/'+userimage)
+    # Convert RGB to BGR 
+    rebuildimg = FEGAN.execute_FEGAN(np.array(fmask)[:,:,::-1].copy(),sketch,stroke_rcv,userimage,image = np.array(rebuildimage)[:, :, ::-1].copy(),read=False)
+    save_image_to_gcs(str(user_code),'result',userimage,rebuildimg)
+    with open('data/result/'+userimage, "rb") as f:
+        return HttpResponse(f.read(), content_type="image/png")
 
 def onetake_gcs(user_code,originname,dbface = False,readdat = True,origin=False,preprocess = False):
     userimage = user_code+'_'+originname
