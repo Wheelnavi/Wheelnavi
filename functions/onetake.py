@@ -86,11 +86,11 @@ def preprocess(user_code,rebuildimage_rcv,originimages_rcv,fmask_rcv,stroke_rcv)
             text = str(point[0])+' '+str(point[1])
             f.write(text)
     originimageread_pil = averageimg
-    make_segment(originimageread_pil,'data/segment/'+userimage)
+    make_segment(originimageread_pil.copy(),'data/segment/'+userimage)
     sketch_image(userimage,foldername = 'data/origin/')
     sketch = cv2.imread('data/sketch/'+userimage)
     save_image_to_gcs(user_code,'sketch',userimage,'data/sketch/'+userimage)
-    rebuildimg = FEGAN.execute_FEGAN(fmask_rcv,sketch,stroke_rcv,userimage,image = originimages_rcv,read=False)
+    rebuildimg = FEGAN.execute_FEGAN(fmask_rcv.copy(),sketch,stroke_rcv.copy(),userimage,image = originimages_rcv.copy(),read=False)
 
 def onetake_gcs(user_code,originname,dbface = False,readdat = True,origin=False,preprocess = False):
     userimage = user_code+'_'+originname
