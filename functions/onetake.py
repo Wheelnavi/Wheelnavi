@@ -64,22 +64,33 @@ def remove_image_from_local(mode_type,user_code,originname,all=False):
         pass
     return 1
 
-def preprocess(user_code,rebuildimage,originimages,fmask):
+def preprocess(user_code,rebuildimage_rcv,originimages_rcv,fmask_rcv,stroke_rcv):
     #rebuildimages -> to be fixed
     #originimages -> original images
-    croppedimg, averageimg, points = cropface.crop_and_average(rebuildimage,originimages,save_file=False,_pil = True)
+    userimage = str(user_code)+'.png'
+    rebuildimage = rebuildimage_rcv.convert('RGB')
+    originimages_cvt = []
+    for oneimage in originimages_rcv:
+        originimages_cvt.append(oneimage.convert('RGB'))
+    fmask = fmask_rcv.convert('RGB')
+    croppedimg, averageimg, points = cropface.crop_and_average(rebuildimage,originimages_cvt,save_file=False,_pil = True)
     swappedface = faceswapbymask.pil_preprocessing(averageimg,croppedimg,np.array(fmask))
     cv2.imwrite('swappedface.png',swappedface)
-    cv2.imwrite('data/origin'+str(user_code)+'.png',averageimg)
+    cv2.imwrite('data/origin/'+userimage,averageimg)
     save_image_to_gcs(str(user_code),'origin',str(user_code)+'.png','data/origin'+str(user_code)+'.png')
-    cv2.imwrite('data/croppedimg'+str(user_code)+'.png',croppedimg)
+    cv2.imwrite('data/rebuild/'+userimage,croppedimg)
     save_image_to_gcs(str(user_code),'origin',str(user_code)+'.png','data/origin'+str(user_code)+'.png')
 
     with open("data/landmark/{}.txt".format(user_code), "w") as f:
-        text = str(points)
-        f.write(text)
-
-
+        for point in points:
+            text = point[0]+' '+point[1]
+            f.write(text)
+    originimageread_pil = averageimg
+    make_segment(originimageread_pil,'data/segment/'+userimage)
+    sketch_image(userimage,foldername = 'data/origin/')
+    sketch = cv2.imread('data/sketch/'+userimage)
+    save_image_to_gcs(user_code,'sketch',userimage,'data/sketch/'+userimage)
+    rebuildimg = FEGAN.execute_FEGAN(fmask_rcv,sketch,stroke_rcv,userimage,image = originimages_rcv,read=False)
 
 def onetake_gcs(user_code,originname,dbface = False,readdat = True,origin=False,preprocess = False):
     userimage = user_code+'_'+originname
