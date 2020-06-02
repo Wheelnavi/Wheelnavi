@@ -62,10 +62,22 @@ def remove_image_from_local(mode_type,user_code,originname,all=False):
         pass
     return 1
 
-def preprocess(user_code, originname):
-    numpyarr = PreProcess.CropFace.crop_and_average('data/rebuild/'+str(user_code)+'_'+originname,'data/origin/',save_file=False)
-    remove_image_from_local('origin',user_code,originname)
-    #file.save numpyarr
+def preprocess(user_code,rebuildimage,originimages,fmask):
+    #rebuildimages -> to be fixed
+    #originimages -> original images
+    croppedimg, averageimg, points = PreProcess.CropFace.crop_and_average(rebuildimage,originimages,save_file=False,_pil = True)
+    swappedface = PreProcess.FaceSwapByMask.pil_preprocessing(averageimg,croppedimg,fmask)
+    cv2.imwrite('swappedface.png',swappedface)
+    cv2.imwrite('data/origin'+str(user_code)+'.png',averageimg)
+    save_image_to_gcs(user_code,'origin',str(user_code)+'.png','data/origin'+str(user_code)+'.png')
+    cv2.imwrite('data/croppedimg'+str(user_code)+'.png',croppedimg)
+    save_image_to_gcs(user_code,'origin',str(user_code)+'.png','data/origin'+str(user_code)+'.png')
+
+    with open("data/landmark/{}.txt".format(user_code), "w") as f:
+        text = "\n".join(points)
+        f.write(text)
+
+
 
 def onetake_gcs(user_code,originname,dbface = False,readdat = True,origin=False,preprocess = False):
     userimage = user_code+'_'+originname
@@ -77,13 +89,6 @@ def onetake_gcs(user_code,originname,dbface = False,readdat = True,origin=False,
         load_image_from_gcs(user_code,'landmark',os.path.splitext(originname)[0]+'.txt')
         if strokestat == 404:
             stroke = None
-    
-    @shared_task
-    def Q_worker(user_code, image_name):
-        #do stuff for worker
-        load_image_from_gcs(user_code,'origin',originname)
-        preprocess(user_code,originname,save_file=True)
-        save_image_to_gcs(user_code,'origin',originname,'data/origin/'+userimage)
 
     rebuild_path = 'data/rebuild/'+userimage
     load_image_from_gcs(user_code,'rebuild',originname)
@@ -93,7 +98,6 @@ def onetake_gcs(user_code,originname,dbface = False,readdat = True,origin=False,
     if dbface:
         DBFace.detect_singleimage(rebuild_path,userimage)
     if preprocess:
-        load_image_from_gcs(user_code,'origin',originname)
         originimageread_pil = preprocess(user_code,originname)
     else:
         if origin:

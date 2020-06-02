@@ -14,7 +14,6 @@ def UserResponse(request, url=None, extra=None):
                 image_name = request.get('image')
                 image_name = Image.open(image_name)
                 image_name.save('hi.png')
-                raise AttributeError(type(image_name))
                 onetake_gcs(str(authorize_object.user_code),image_name,dbface=True,readdat=True)
                 return base.Custom_Response(200,'done')
             elif mode == 'inference_origin':
@@ -22,8 +21,14 @@ def UserResponse(request, url=None, extra=None):
                 onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,origin=True)
                 return base.Custom_Response(200,'done')
             elif mode == 'inference_preprocess':
-                image_name = request.getlist('image')
-                onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,preprocess=True)
+                preprocess_images = []
+                for oneImage in request.getlist('originimage'):
+                    preprocess_images.append(Image.open(oneImage.convert('RGB')))
+                rebuild_image = Image.open(request.get('rebuildimage').convert('RGB'))
+                mask_image = Image.open(request.get('maskimage').convert('RGB'))
+                preprocess(authorize_object.user_code,rebuild_image,preprocess_images,mask_image)
+
+                #onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,preprocess=True)
                 return base.Custom_Response(200,'done')
             else:
                 return base.Custom_Response(502,'not implemented')
