@@ -4,7 +4,9 @@ import functions.segment as segment
 import functions.FEGAN as FEGAN
 import functions.APDrawingGan as APDrawingGAN
 from functions.dependency_imports import *
-import re_face_preprocessing as PreProcess
+import re_face_preprocessing.CropFace as cropface
+import re_face_preprocessing.FaceSwapByMask as faceswapbymask
+import re_face_preprocessing
 def onetake(originname,mask,stroke,dbface = False,readdat = False):
     if readdat:
         mask = cv2.imread('extra/mask.png')
@@ -65,16 +67,16 @@ def remove_image_from_local(mode_type,user_code,originname,all=False):
 def preprocess(user_code,rebuildimage,originimages,fmask):
     #rebuildimages -> to be fixed
     #originimages -> original images
-    croppedimg, averageimg, points = PreProcess.CropFace.crop_and_average(rebuildimage,originimages,save_file=False,_pil = True)
-    swappedface = PreProcess.FaceSwapByMask.pil_preprocessing(averageimg,croppedimg,fmask)
+    croppedimg, averageimg, points = cropface.crop_and_average(rebuildimage,originimages,save_file=False,_pil = True)
+    swappedface = faceswapbymask.pil_preprocessing(averageimg,croppedimg,np.array(fmask))
     cv2.imwrite('swappedface.png',swappedface)
     cv2.imwrite('data/origin'+str(user_code)+'.png',averageimg)
-    save_image_to_gcs(user_code,'origin',str(user_code)+'.png','data/origin'+str(user_code)+'.png')
+    save_image_to_gcs(str(user_code),'origin',str(user_code)+'.png','data/origin'+str(user_code)+'.png')
     cv2.imwrite('data/croppedimg'+str(user_code)+'.png',croppedimg)
-    save_image_to_gcs(user_code,'origin',str(user_code)+'.png','data/origin'+str(user_code)+'.png')
+    save_image_to_gcs(str(user_code),'origin',str(user_code)+'.png','data/origin'+str(user_code)+'.png')
 
     with open("data/landmark/{}.txt".format(user_code), "w") as f:
-        text = "\n".join(points)
+        text = str(points)
         f.write(text)
 
 

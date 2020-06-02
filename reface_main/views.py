@@ -23,9 +23,9 @@ def UserResponse(request, url=None, extra=None):
             elif mode == 'inference_preprocess':
                 preprocess_images = []
                 for oneImage in request.getlist('originimage'):
-                    preprocess_images.append(Image.open(oneImage.convert('RGB')))
-                rebuild_image = Image.open(request.get('rebuildimage').convert('RGB'))
-                mask_image = Image.open(request.get('maskimage').convert('RGB'))
+                    preprocess_images.append(Image.open(oneImage).convert('RGB'))
+                rebuild_image = Image.open(request.get('rebuildimage')).convert('RGB')
+                mask_image = Image.open(request.get('maskimage')).convert('RGB')
                 preprocess(authorize_object.user_code,rebuild_image,preprocess_images,mask_image)
 
                 #onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,preprocess=True)
