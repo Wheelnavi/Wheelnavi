@@ -85,7 +85,7 @@ def preprocess(user_code,rebuildimage_rcv,originimages_rcv,fmask_rcv,stroke_rcv)
         for point in points:
             text = str(point[0])+' '+str(point[1])
             f.write(text)
-    originimageread_pil = averageimg
+    originimageread_pil = averageimg.copy()
     make_segment(originimageread_pil.copy(),'data/segment/'+userimage)
     sketch_image(userimage,foldername = 'data/origin/')
     sketch = cv2.imread('data/sketch/'+userimage)
