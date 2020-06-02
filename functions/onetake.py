@@ -83,7 +83,7 @@ def preprocess(user_code,rebuildimage_rcv,originimages_rcv,fmask_rcv,stroke_rcv)
 
     with open("data/landmark/{}.txt".format(user_code), "w") as f:
         for point in points:
-            text = point[0]+' '+point[1]
+            text = str(point[0])+' '+str(point[1])
             f.write(text)
     originimageread_pil = averageimg
     make_segment(originimageread_pil,'data/segment/'+userimage)
