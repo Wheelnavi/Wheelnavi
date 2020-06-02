@@ -19,6 +19,10 @@ def UserResponse(request, url=None, extra=None):
                 image_name = request.get('image')
                 onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,origin=True)
                 return base.Custom_Response(200,'done')
+            elif mode == 'inference_preprocess':
+                image_name = request.getlist('image')
+                onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,preprocess=True)
+                return base.Custom_Response(200,'done')
             else:
                 return base.Custom_Response(502,'not implemented')
         else:

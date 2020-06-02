@@ -63,10 +63,11 @@ def remove_image_from_local(mode_type,user_code,originname,all=False):
     return 1
 
 def preprocess(user_code, originname):
-    numpyarr = PreProcess.CropFace.crop_and_average('data/rebuild/'+str(user_code)+'_'+originname,'data/origin/')
+    numpyarr = PreProcess.CropFace.crop_and_average('data/rebuild/'+str(user_code)+'_'+originname,'data/origin/',save_file=False)
     remove_image_from_local('origin',user_code,originname)
     #file.save numpyarr
-def onetake_gcs(user_code,originname,dbface = False,readdat = True,origin=False):
+
+def onetake_gcs(user_code,originname,dbface = False,readdat = True,origin=False,preprocess = False):
     userimage = user_code+'_'+originname
     if readdat:
         load_image_from_gcs(user_code,'mask',originname)
@@ -77,17 +78,30 @@ def onetake_gcs(user_code,originname,dbface = False,readdat = True,origin=False)
         if strokestat == 404:
             stroke = None
     
+    @shared_task
+    def Q_worker(user_code, image_name):
+        #do stuff for worker
+        load_image_from_gcs(user_code,'origin',originname)
+        preprocess(user_code,originname,save_file=True)
+        save_image_to_gcs(user_code,'origin',originname,'data/origin/'+userimage)
+
     rebuild_path = 'data/rebuild/'+userimage
     load_image_from_gcs(user_code,'rebuild',originname)
+
     originimageread = cv2.imread(rebuild_path)
     #please save landmark before this
     if dbface:
         DBFace.detect_singleimage(rebuild_path,userimage)
-    if origin:
+    if preprocess:
         load_image_from_gcs(user_code,'origin',originname)
-        originimageread_pil = Image.open('data/origin/'+userimage)
+        originimageread_pil = preprocess(user_code,originname)
     else:
-        originimageread_pil = Image.open(rebuild_path)
+        if origin:
+            load_image_from_gcs(user_code,'origin',originname)
+            originimageread_pil = Image.open('data/origin/'+userimage)
+        else:
+            originimageread_pil = Image.open(rebuild_path)
+
     make_segment(originimageread_pil,'data/segment/'+userimage)
     if origin:
         sketch_image(userimage,foldername = 'data/origin/')
