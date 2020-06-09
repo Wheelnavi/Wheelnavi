@@ -91,6 +91,7 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     for oneimage in originimages_rcv:
         originimages_cvt.append(oneimage.convert('RGB'))
     fmask = fmask_rcv.convert('RGB')
+    cv2.imwrite('data/mask/'+userimage,np.array(fmask).copy())
     croppedimg, averageimg, points, landmarks = cropface.crop_and_average(
         rebuildimage, originimages_cvt, save_file=False, _pil=True)
     swappedface = faceswapbymask.pil_preprocessing(
@@ -121,7 +122,8 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     rebuildimg,rebuilt = FEGAN.execute_FEGAN(cv2.bitwise_not(np.array(fmask).copy(
     )), sketch, stroke_rcv, userimage, image=np.array(croppedimg).copy(), read=False)
     rebuilt = cv2.imread('data/result/'+userimage)
-    recov_img,newmask = cropface.rotate_scale_origin(inputimage, rebuilt, np.array(fmask).copy(), landmarks)
+    fmaskread = cv2.imread('data/mask/'+userimage)
+    recov_img,newmask = cropface.rotate_scale_origin(inputimage, rebuilt, fmaskread, landmarks)
     cv2.imwrite('data/recover/'+userimage,recov_img)
     save_image_to_gcs(str(user_code), 'result', userimage, rebuildimg)
     with open('data/recover/'+userimage, "rb") as f:
