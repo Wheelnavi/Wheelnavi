@@ -91,7 +91,7 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     for oneimage in originimages_rcv:
         originimages_cvt.append(oneimage.convert('RGB'))
     fmask = fmask_rcv.convert('RGB')
-    cv2.imwrite('data/mask/'+userimage,np.array(fmask).copy())
+    cv2.imwrite('data/mask/'+userimage,cv2.bitwise_not(np.array(fmask).copy()))
     croppedimg, averageimg, points, landmarks = cropface.crop_and_average(
         rebuildimage, originimages_cvt, save_file=False, _pil=True)
     swappedface = faceswapbymask.pil_preprocessing(
