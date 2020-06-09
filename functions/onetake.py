@@ -120,6 +120,7 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     # Convert RGB to BGR
     rebuildimg,rebuilt = FEGAN.execute_FEGAN(cv2.bitwise_not(np.array(fmask).copy(
     )), sketch, stroke_rcv, userimage, image=np.array(croppedimg).copy(), read=False)
+    rebuilt = cv2.imread('data/result/'+userimage)
     recov_img,newmask = cropface.rotate_scale_origin(inputimage, rebuilt, np.array(fmask).copy(), landmarks)
     cv2.imwrite('data/recover/'+userimage,recov_img)
     save_image_to_gcs(str(user_code), 'result', userimage, rebuildimg)
