@@ -86,8 +86,8 @@ def UserResponse(request, url=None, extra=None):
         else:
             return response
     elif request.method == 'PATCH':
+        mode = request.data['mode']
         authorized, authorize_object, response, request = base.Authorize_session(request)
-        mode = request.get('mode')
         if authorized:
             if mode == 'inference':
                 image_name = request.get('image')
