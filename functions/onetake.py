@@ -123,7 +123,7 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     recov_img,newmask = cropface.rotate_scale_origin(inputimage, rebuilt, np.array(fmask).copy(), landmarks)
     cv2.imwrite('data/recover/'+userimage,recov_img)
     save_image_to_gcs(str(user_code), 'result', userimage, rebuildimg)
-    with open('data/result/'+userimage, "rb") as f:
+    with open('data/recover/'+userimage, "rb") as f:
         return HttpResponse(f.read(), content_type="image/png")
 
 
