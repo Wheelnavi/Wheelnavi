@@ -9,24 +9,6 @@ import re_face_preprocessing.FaceSwapByMask as faceswapbymask
 import re_face_preprocessing
 
 
-def onetake(originname, mask, stroke, dbface=False, readdat=False):
-    if readdat:
-        mask = cv2.imread('extra/mask.png')
-        stroke = cv2.imread('extra/stroke.png')
-    originimageread = cv2.imread('origin/'+originname)
-    # please save landmark before this
-    if dbface:
-        DBFace.detect_singleimage(originimageread, originname)
-
-    make_segment(originimageread, 'masks/'+originname)
-    sketch_image(originname)
-    sketch = cv2.imread('sketch/'+originname)
-    FEGAN.execute_FEGAN(mask, sketch, stroke,
-                        image=originimageread, read=False)
-
-    #######################################################################
-
-
 def sketch_image(imagename, foldername='data/rebuild/', savefoldername='data/sketch/', landmarkdir='/data/landmark/', maskdir='/data/segment/'):
     APDrawingGAN.APDrawingGan(foldername, savefoldername,
                               imagename, os.getcwd()+landmarkdir, os.getcwd()+maskdir)
@@ -91,11 +73,13 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     for oneimage in originimages_rcv:
         originimages_cvt.append(oneimage.convert('RGB'))
     fmask = fmask_rcv.convert('RGB')
-    cv2.imwrite('data/mask/'+userimage,np.array(fmask).copy())
-    croppedimg, averageimg, points, landmarks = cropface.crop_and_average(
-        rebuildimage, originimages_cvt, save_file=False, _pil=True)
+    cv2.imwrite('data/mask/'+userimage, np.array(fmask).copy())
+    fmaskread = cv2.imread('data/mask/'+userimage)
+
+    croppedimg, averageimg, points, landmarks, fmask = cropface.crop_and_average(
+        rebuildimage, originimages_cvt, np.array(fmask).copy(), save_file=False, _pil=True)
     swappedface = faceswapbymask.pil_preprocessing(
-        averageimg, croppedimg, np.array(fmask))
+        averageimg, croppedimg, np.array(fmask).copy())
     # cv2.imwrite('swappedface.png',swappedface)
     cv2.imwrite('data/origin/'+userimage, swappedface)
     save_image_to_gcs(str(user_code), 'origin', str(
@@ -118,55 +102,12 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     sketch = cv2.imread('data/sketch/'+userimage)
     save_image_to_gcs(str(user_code), 'sketch',
                       userimage, 'data/sketch/'+userimage)
-    # Convert RGB to BGR
-    rebuildimg,rebuilt = FEGAN.execute_FEGAN(np.array(fmask).copy(
-    ), sketch, stroke_rcv, userimage, image=np.array(croppedimg).copy(), read=False)
+
+    rebuildimg, rebuilt = FEGAN.execute_FEGAN(fmask, sketch, stroke_rcv, userimage, image=np.array(croppedimg).copy(), read=False)
     rebuilt = cv2.imread('data/result/'+userimage)
-    fmaskread = cv2.imread('data/mask/'+userimage)
-    recov_img,newmask = cropface.rotate_scale_origin(inputimage, rebuilt, fmaskread, landmarks)
-    cv2.imwrite('data/recover/'+userimage,recov_img)
+    recov_img, newmask = cropface.rotate_scale_origin(
+        inputimage, rebuilt, fmask, landmarks)
+    cv2.imwrite('data/recover/'+userimage, recov_img)
     save_image_to_gcs(str(user_code), 'result', userimage, rebuildimg)
     with open('data/recover/'+userimage, "rb") as f:
         return HttpResponse(f.read(), content_type="image/png")
-
-
-def onetake_gcs(user_code, originname, dbface=False, readdat=True, origin=False, preprocess=False):
-    userimage = user_code+'_'+originname
-    if readdat:
-        load_image_from_gcs(user_code, 'mask', originname)
-        mask = cv2.imread('data/mask/'+userimage)
-        strokestat = load_image_from_gcs(user_code, 'stroke', originname)
-        stroke = cv2.imread('data/stroke/'+userimage)
-        load_image_from_gcs(user_code, 'landmark',
-                            os.path.splitext(originname)[0]+'.txt')
-        if strokestat == 404:
-            stroke = None
-
-    rebuild_path = 'data/rebuild/'+userimage
-    load_image_from_gcs(user_code, 'rebuild', originname)
-
-    originimageread = cv2.imread(rebuild_path)
-    # please save landmark before this
-    if dbface:
-        DBFace.detect_singleimage(rebuild_path, userimage)
-    if preprocess:
-        originimageread_pil = preprocess(user_code, originname)
-    else:
-        if origin:
-            load_image_from_gcs(user_code, 'origin', originname)
-            originimageread_pil = Image.open('data/origin/'+userimage)
-        else:
-            originimageread_pil = Image.open(rebuild_path)
-
-    make_segment(originimageread_pil, 'data/segment/'+userimage)
-    if origin:
-        sketch_image(userimage, foldername='data/origin/')
-    else:
-        sketch_image(userimage)
-    sketch = cv2.imread('data/sketch/'+userimage)
-    save_image_to_gcs(user_code, 'sketch', originname,
-                      'data/sketch/'+userimage)
-    rebuildimg = FEGAN.execute_FEGAN(
-        mask, sketch, stroke, userimage, image=originimageread, read=False)
-    save_image_to_gcs(user_code, 'result', originname, rebuildimg)
-    remove_image_from_local(None, user_code, originname, all=True)
