@@ -100,5 +100,4 @@ def Authorize_session(request,restriction=3, specific=[-1]):
         response = Custom_Response(401, 'login required')
 
 
-    request = gen_request_code(request_method.copy(), request.FILES)
-    return authorized, authorize_object, response, request
+    return authorized, authorize_object, response, request.FILES

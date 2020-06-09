@@ -66,7 +66,7 @@ def load_image_from_gcs(user_code, mode_type, originname):
 def remove_image_from_local(mode_type, user_code, originname, all=False):
     if all:
         import glob
-        for fol in ['mask', 'stroke', 'rebuild', 'sketch', 'origin']:
+        for fol in ['average','detect_results','input','landmark','segment','mask', 'stroke', 'rebuild', 'sketch', 'origin']:
             files = glob.glob('data/'+fol+'/*')
             for f in files:
                 os.remove(f)
@@ -125,7 +125,9 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     fmaskread = cv2.imread('data/mask/'+userimage)
     recov_img,newmask = cropface.rotate_scale_origin(inputimage, rebuilt, fmaskread, landmarks)
     cv2.imwrite('data/recover/'+userimage,recov_img)
+    save_image_to_gcs(str(user_code),'recover',userimage,'data/recover/'+userimage)
     save_image_to_gcs(str(user_code), 'result', userimage, rebuildimg)
+    remove_image_from_local('','','',all=True)
     with open('data/recover/'+userimage, "rb") as f:
         return HttpResponse(f.read(), content_type="image/png")
 
