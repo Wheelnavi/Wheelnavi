@@ -168,4 +168,4 @@ def execute_FEGAN(mask,sketch,stroke,imagename,image=None,read=True):
         ex.open(image = image)
     rebuildimg = ex.complete(mask,sketch,stroke,read)
     cv2.imwrite('data/result/'+imagename,rebuildimg)
-    return 'data/result/'+imagename
+    return 'data/result/'+imagename,rebuildimg

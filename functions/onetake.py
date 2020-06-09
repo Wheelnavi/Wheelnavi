@@ -110,6 +110,7 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
         for point in points:
             text = str(point[0])+' '+str(point[1])+'\n'
             f.write(text)
+    inputimage = cv2.imread('data/input/'+userimage)
     originimageread_pil = Image.open('data/origin/'+userimage)
     make_segment(originimageread_pil, 'data/segment/'+userimage)
     sketch_image(userimage, foldername='data/origin/')
@@ -117,9 +118,9 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     save_image_to_gcs(str(user_code), 'sketch',
                       userimage, 'data/sketch/'+userimage)
     # Convert RGB to BGR
-    rebuildimg = FEGAN.execute_FEGAN(cv2.bitwise_not(np.array(fmask).copy(
+    rebuildimg,rebuilt = FEGAN.execute_FEGAN(cv2.bitwise_not(np.array(fmask).copy(
     )), sketch, stroke_rcv, userimage, image=np.array(croppedimg).copy(), read=False)
-    recov_img = cropface.rotate_scale_origin(rebuildimage, rebuildimg, fmask, landmarks)
+    recov_img,newmask = cropface.rotate_scale_origin(inputimage, rebuilt, np.array(fmask).copy(), landmarks)
     cv2.imwrite('data/recover/'+userimage,recov_img)
     save_image_to_gcs(str(user_code), 'result', userimage, rebuildimg)
     with open('data/result/'+userimage, "rb") as f:
