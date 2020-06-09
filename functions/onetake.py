@@ -84,6 +84,8 @@ def preprocess(user_code,rebuildimage_rcv,originimages_rcv,fmask_rcv,stroke_rcv)
     save_image_to_gcs(str(user_code),'origin',str(user_code)+'.png','data/origin/'+str(user_code)+'.png')
     cv2.imwrite('data/rebuild/'+userimage,croppedimg)
     save_image_to_gcs(str(user_code),'rebuild',str(user_code)+'.png','data/rebuild/'+str(user_code)+'.png')
+    cv2.imwrite('data/average/'+userimage,averageimg)
+    save_image_to_gcs(str(user_code),'average',str(user_code)+'.png','data/average/'+str(user_code)+'.png')
 
     with open("data/landmark/{}.txt".format(user_code), "w") as f:
         for point in points:
@@ -95,7 +97,7 @@ def preprocess(user_code,rebuildimage_rcv,originimages_rcv,fmask_rcv,stroke_rcv)
     sketch = cv2.imread('data/sketch/'+userimage)
     save_image_to_gcs(str(user_code),'sketch',userimage,'data/sketch/'+userimage)
     # Convert RGB to BGR 
-    rebuildimg = FEGAN.execute_FEGAN(np.array(fmask)[:,:,::-1].copy(),sketch,stroke_rcv,userimage,image = np.array(rebuildimage)[:, :, ::-1].copy(),read=False)
+    rebuildimg = FEGAN.execute_FEGAN(cv2.bitwise_not(np.array(fmask).copy()),sketch,stroke_rcv,userimage,image = np.array(croppedimg).copy(),read=False)
     save_image_to_gcs(str(user_code),'result',userimage,rebuildimg)
     with open('data/result/'+userimage, "rb") as f:
         return HttpResponse(f.read(), content_type="image/png")
