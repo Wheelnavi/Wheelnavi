@@ -61,16 +61,56 @@ def UserResponse(request, url=None, extra=None):
         authorized, authorize_object, response, request = base.Authorize_session(request)
         mode = request.get('mode')
         if authorized:
-            pass
+            if mode == 'inference':
+                image_name = request.get('image')
+                image_name = Image.open(image_name)
+                image_name.save('hi.png')
+                onetake_gcs(str(authorize_object.user_code),image_name,dbface=True,readdat=True)
+                return base.Custom_Response(200,'done')
+            elif mode == 'inference_origin':
+                image_name = request.get('image')
+                onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,origin=True)
+                return base.Custom_Response(200,'done')
+            elif mode == 'inference_preprocess':
+                preprocess_images = []
+                for oneImage in request.getlist('originimage'):
+                    preprocess_images.append(Image.open(oneImage))
+                rebuild_image = Image.open(request.get('rebuildimage'))
+                mask_image = Image.open(request.get('maskimage'))
+                return preprocess(authorize_object.user_code,rebuild_image,preprocess_images,mask_image,None)
+
+                #onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,preprocess=True)
+                return base.Custom_Response(200,'done')
+            else:
+                return base.Custom_Response(502,'not implemented')
         else:
             return response
     elif request.method == 'PATCH':
         authorized, authorize_object, response, request = base.Authorize_session(request)
         mode = request.get('mode')
         if authorized:
-            if mode == 'sketch_picture':
-                pass
+            if mode == 'inference':
+                image_name = request.get('image')
+                image_name = Image.open(image_name)
+                image_name.save('hi.png')
+                onetake_gcs(str(authorize_object.user_code),image_name,dbface=True,readdat=True)
+                return base.Custom_Response(200,'done')
+            elif mode == 'inference_origin':
+                image_name = request.get('image')
+                onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,origin=True)
+                return base.Custom_Response(200,'done')
+            elif mode == 'inference_preprocess':
+                preprocess_images = []
+                for oneImage in request.getlist('originimage'):
+                    preprocess_images.append(Image.open(oneImage))
+                rebuild_image = Image.open(request.get('rebuildimage'))
+                mask_image = Image.open(request.get('maskimage'))
+                return preprocess(authorize_object.user_code,rebuild_image,preprocess_images,mask_image,None)
 
+                #onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,preprocess=True)
+                return base.Custom_Response(200,'done')
+            else:
+                return base.Custom_Response(502,'not implemented')
         else:
             return response
     elif request.method == 'DELETE':
