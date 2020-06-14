@@ -73,9 +73,9 @@ def remove_image_from_local(mode_type, user_code, originname, all=False):
 def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_rcv, origin_flag):
     # rebuildimages -> to be fixed
     # originimages -> original images
-    userimage = ''.join(random.choice(
-        string.ascii_uppercase + string.digits) for _ in range(4))+'.png'
-
+    reqstring = ''.join(random.choice(
+        string.ascii_uppercase + string.digits) for _ in range(3))
+    userimage = str(user_code)+reqstring+'.png'
     rebuildimage = rebuildimage_rcv.convert('RGB')
     rebuildimage.save('data/input/'+userimage)
     # origin_flag -> get from request-> default
@@ -86,7 +86,8 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     for oneimage in originimages_rcv:
         imagename = oneimage.name
         oneimage = Image.open(oneimage).convert('RGB')
-        cv2.imwrite('data/'+"originimage/"+imagename,oneimage)
+        oneimage.save('data/'+"originimage/"+str(user_code)+imagename)
+        save_image_to_gcs(str(user_code),'originimage',str(user_code)+imagename,'data/originimage/'+str(user_code)+imagename)
 
     if origin_flag == 1:
         # gcs download
@@ -94,11 +95,11 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
 
     files = glob.glob('data/'+"originimage"+'/*')
     for f in files:
-        if user_code in f:
+        if str(user_code) in f:
             originimages_cvt.append(cv2.imread(f))
 
     fmask = fmask_rcv.convert('RGB')
-    cv2.imwrite('data/mask/'+userimage, np.array(fmask).copy())
+    fmask.save('data/mask/'+userimage)
     fmaskread = cv2.imread('data/mask/'+userimage)
 
     croppedimg, averageimg, points, landmarks, fmask = cropface.crop_and_average(
@@ -110,7 +111,7 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     cv2.imwrite('data/rebuild/'+userimage, croppedimg)
     cv2.imwrite('data/average/'+userimage, averageimg)
 
-    with open("data/landmark/{}.txt".format(user_code), "w") as f:
+    with open("data/landmark/{}.txt".format(str(user_code)+reqstring), "w") as f:
         for point in points:
             text = str(point[0])+' '+str(point[1])+'\n'
             f.write(text)

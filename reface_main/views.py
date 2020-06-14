@@ -67,7 +67,8 @@ def UserResponse(request, url=None, extra=None):
             return response
 
     elif request.method == 'PATCH':
-        mode = request.data['mode']
+        mode = request.data.get('mode')
+        origin_flag = request.data.get('origin_flag')
         authorized, authorize_object, response, request = base.Authorize_session(
             request)
         if authorized:
@@ -84,27 +85,38 @@ def UserResponse(request, url=None, extra=None):
                             image_name, dbface=False, readdat=True, origin=True)
                 return base.Custom_Response(200, 'done')
             elif mode == 'inference_preprocess':
-                origin_flag = request.data['origin_flag']
+                mask_image = Image.open(request.get('maskimage'))
+                rebuild_image = Image.open(request.get('rebuildimage'))
                 mask_image = Image.open(request.get('maskimage'))
                 return preprocess(authorize_object.user_code, rebuild_image, request.getlist('originimage'), mask_image, None, origin_flag)
 
                 # onetake_gcs(str(authorize_object.user_code),image_name,dbface=False,readdat=True,preprocess=True)
                 return base.Custom_Response(200, 'done')
+            elif mode == 'get_origin_image':
+                blobs = STORAGE_CLIENT.list_blobs(
+                    GS_BUCKET_NAME, prefix='user_' + str(authorize_object.user_code) + '/originimage/')
+                bloblist = []
+                for blob in blobs:
+                    bloblist.append(blob.name)
+                return base.Custom_Response(200, bloblist)
             else:
                 return base.Custom_Response(502, 'not implemented')
         else:
             return response
     elif request.method == 'DELETE':
+        mode = request.data.get('mode')
+        images = request.data.getlist('images')
         authorized, authorize_object, response, request = base.Authorize_session(
             request)
         if authorized:
             if mode == 'remove_image':
-                images = request.getlist('images')
                 for single_image in images:
-                    blobfile = STORAGE_CLIENT(GS_BUCKET_NAME).blob(
-                        prefix='user_' + str(authorize_object.user_code) + '/originimage/'+single_image).delete()
+                    blobfile = STORAGE_CLIENT.bucket(GS_BUCKET_NAME).blob(str(single_image))
+                    if blobfile.exists():
+                        blobfile.delete()
                 return base.Custom_Response(200, 'removed')
-        return response
+        else:
+            return response
     return base.Custom_Response(500, 'not implemented passes')
 
 
