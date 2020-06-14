@@ -20,11 +20,6 @@ class Ex:
     def open(self,image = None,fileName=None):
         if fileName:
             mat_img = cv2.imread(fileName)
-            # redbrush = QBrush(Qt.red)
-            # blackpen = QPen(Qt.black)
-            # blackpen.setWidth(5)
-
-
             mat_img = cv2.resize(mat_img, (512, 512), interpolation=cv2.INTER_CUBIC)
             mat_img = mat_img/127.5 - 1
             self.mat_img = np.expand_dims(mat_img,axis=0)

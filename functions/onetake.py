@@ -7,6 +7,7 @@ from functions.dependency_imports import *
 import re_face_preprocessing.CropFace as cropface
 import re_face_preprocessing.FaceSwapByMask as faceswapbymask
 import re_face_preprocessing
+import glob
 
 
 def sketch_image(imagename, foldername='data/rebuild/', savefoldername='data/sketch/', landmarkdir='/data/landmark/', maskdir='/data/segment/'):
@@ -40,15 +41,25 @@ def load_image_from_gcs(user_code, mode_type, originname):
         str('user_' + user_code + '/' + mode_type + '/' + originname))
     if blobfile.exists():
         blobfile.download_to_filename(
-            'data/'+mode_type+'/'+str(user_code)+'_'+originname)
+            'data/'+mode_type+'/'+originname)
+        return 1
+    return 404
+
+
+def load_images_from_gcs(user_code, mode_type):
+    blobfile = STORAGE_CLIENT.bucket(GS_BUCKET_NAME).list_blobs(
+        prefix=str('user_' + user_code + '/' + mode_type))
+    for blob in blobfile:
+        filename = blob.name.replace('/', '_')
+        blob.download_to_filename(
+            'data/'+mode_type+'/' + user_code+"_"+filename)  # Download
         return 1
     return 404
 
 
 def remove_image_from_local(mode_type, user_code, originname, all=False):
     if all:
-        import glob
-        for fol in ['average','detect_results','input','landmark','segment','mask', 'stroke', 'rebuild', 'sketch', 'origin']:
+        for fol in ['average', 'detect_results', 'input', 'landmark', 'segment', 'mask', 'stroke', 'rebuild', 'sketch', 'origin']:
             files = glob.glob('data/'+fol+'/*')
             for f in files:
                 os.remove(f)
@@ -59,19 +70,33 @@ def remove_image_from_local(mode_type, user_code, originname, all=False):
     return 1
 
 
-def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_rcv):
+def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_rcv, origin_flag):
     # rebuildimages -> to be fixed
     # originimages -> original images
-    userimage = str(user_code)+'.png'
+    userimage = ''.join(random.choice(
+        string.ascii_uppercase + string.digits) for _ in range(4))+'.png'
 
     rebuildimage = rebuildimage_rcv.convert('RGB')
     rebuildimage.save('data/input/'+userimage)
-    save_image_to_gcs(str(user_code), 'input', str(
-        user_code)+'.png', 'data/input/'+str(user_code)+'.png')
+    # origin_flag -> get from request-> default
+    # 1-> all from gcs and request
+    # 2-> only from request
 
     originimages_cvt = []
     for oneimage in originimages_rcv:
-        originimages_cvt.append(oneimage.convert('RGB'))
+        imagename = oneimage.name
+        oneimage = Image.open(oneimage).convert('RGB')
+        cv2.imwrite('data/'+"originimage/"+imagename,oneimage)
+
+    if origin_flag == 1:
+        # gcs download
+        load_images_from_gcs(user_code, 'originimage')
+
+    files = glob.glob('data/'+"originimage"+'/*')
+    for f in files:
+        if user_code in f:
+            originimages_cvt.append(cv2.imread(f))
+
     fmask = fmask_rcv.convert('RGB')
     cv2.imwrite('data/mask/'+userimage, np.array(fmask).copy())
     fmaskread = cv2.imread('data/mask/'+userimage)
@@ -82,19 +107,14 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
         averageimg, croppedimg, np.array(fmask).copy())
     # cv2.imwrite('swappedface.png',swappedface)
     cv2.imwrite('data/origin/'+userimage, swappedface)
-    save_image_to_gcs(str(user_code), 'origin', str(
-        user_code)+'.png', 'data/origin/'+str(user_code)+'.png')
     cv2.imwrite('data/rebuild/'+userimage, croppedimg)
-    save_image_to_gcs(str(user_code), 'rebuild', str(
-        user_code)+'.png', 'data/rebuild/'+str(user_code)+'.png')
     cv2.imwrite('data/average/'+userimage, averageimg)
-    save_image_to_gcs(str(user_code), 'average', str(
-        user_code)+'.png', 'data/average/'+str(user_code)+'.png')
 
     with open("data/landmark/{}.txt".format(user_code), "w") as f:
         for point in points:
             text = str(point[0])+' '+str(point[1])+'\n'
             f.write(text)
+
     inputimage = cv2.imread('data/input/'+userimage)
     originimageread_pil = Image.open('data/origin/'+userimage)
     make_segment(originimageread_pil, 'data/segment/'+userimage)
@@ -103,13 +123,25 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     save_image_to_gcs(str(user_code), 'sketch',
                       userimage, 'data/sketch/'+userimage)
 
-    rebuildimg, rebuilt = FEGAN.execute_FEGAN(fmask, sketch, stroke_rcv, userimage, image=np.array(croppedimg).copy(), read=False)
+    rebuildimg, rebuilt = FEGAN.execute_FEGAN(
+        fmask, sketch, stroke_rcv, userimage, image=np.array(croppedimg).copy(), read=False)
     rebuilt = cv2.imread('data/result/'+userimage)
     fmaskread = cv2.imread('data/mask/'+userimage)
-    recov_img,newmask = cropface.rotate_scale_origin(inputimage, rebuilt, fmaskread, landmarks)
-    cv2.imwrite('data/recover/'+userimage,recov_img)
-    save_image_to_gcs(str(user_code),'recover',userimage,'data/recover/'+userimage)
+    recov_img, newmask = cropface.rotate_scale_origin(
+        inputimage, rebuilt, fmaskread, landmarks)
+    cv2.imwrite('data/recover/'+userimage, recov_img)
+
+    save_image_to_gcs(str(user_code), 'input',
+                      userimage, 'data/input/'+userimage)
+    save_image_to_gcs(str(user_code), 'origin',
+                      userimage, 'data/origin/'+userimage)
+    save_image_to_gcs(str(user_code), 'rebuild',
+                      userimage, 'data/rebuild/'+userimage)
+    save_image_to_gcs(str(user_code), 'average',
+                      userimage, 'data/average/'+userimage)
+    save_image_to_gcs(str(user_code), 'recover',
+                      userimage, 'data/recover/'+userimage)
     save_image_to_gcs(str(user_code), 'result', userimage, rebuildimg)
-    remove_image_from_local('','','',all=True)
+    remove_image_from_local('', '', '', all=True)
     with open('data/recover/'+userimage, "rb") as f:
         return HttpResponse(f.read(), content_type="image/png")
