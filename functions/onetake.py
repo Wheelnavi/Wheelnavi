@@ -59,7 +59,7 @@ def load_images_from_gcs(user_code, mode_type):
 
 def remove_image_from_local(mode_type, user_code, originname, all=False):
     if all:
-        for fol in ['average', 'detect_results', 'input', 'landmark', 'segment', 'mask', 'stroke', 'rebuild', 'sketch', 'origin']:
+        for fol in ['originimage','recover','result','average', 'detect_results', 'input', 'landmark', 'segment', 'mask', 'stroke', 'rebuild', 'sketch', 'origin']:
             files = glob.glob('data/'+fol+'/*')
             for f in files:
                 os.remove(f)
