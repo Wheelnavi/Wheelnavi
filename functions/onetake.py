@@ -47,13 +47,12 @@ def load_image_from_gcs(user_code, mode_type, originname):
 
 
 def load_images_from_gcs(user_code, mode_type):
-    blobfile = STORAGE_CLIENT.bucket(GS_BUCKET_NAME).list_blobs(
-        prefix=str('user_' + user_code + '/' + mode_type))
+    blobfile = STORAGE_CLIENT.list_blobs(GS_BUCKET_NAME,
+        prefix=str('user_' + user_code + '/' + mode_type+'/'))
     for blob in blobfile:
         filename = blob.name.replace('/', '_')
         blob.download_to_filename(
             'data/'+mode_type+'/' + user_code+"_"+filename)  # Download
-        return 1
     return 404
 
 
@@ -62,7 +61,8 @@ def remove_image_from_local(mode_type, user_code, originname, all=False):
         for fol in ['originimage','recover','result','average', 'detect_results', 'input', 'landmark', 'segment', 'mask', 'stroke', 'rebuild', 'sketch', 'origin']:
             files = glob.glob('data/'+fol+'/*')
             for f in files:
-                os.remove(f)
+                if str(user_code) in f:
+                    os.remove(f)
         pass
     else:
         os.remove('data/'+mode_type+'/'+str(user_code)+'_'+originname)
@@ -73,6 +73,7 @@ def remove_image_from_local(mode_type, user_code, originname, all=False):
 def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_rcv, origin_flag):
     # rebuildimages -> to be fixed
     # originimages -> original images
+    remove_image_from_local('',str(user_code),'',all=True)
     reqstring = ''.join(random.choice(
         string.ascii_uppercase + string.digits) for _ in range(3))
     userimage = str(user_code)+reqstring+'.png'
@@ -89,15 +90,14 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
         oneimage.save('data/'+"originimage/"+str(user_code)+imagename)
         save_image_to_gcs(str(user_code),'originimage',str(user_code)+imagename,'data/originimage/'+str(user_code)+imagename)
 
-    if origin_flag == 1:
+    if int(origin_flag) == 1:
         # gcs download
-        load_images_from_gcs(user_code, 'originimage')
+        load_images_from_gcs(str(user_code), 'originimage')
 
     files = glob.glob('data/'+"originimage"+'/*')
     for f in files:
         if str(user_code) in f:
             originimages_cvt.append(cv2.imread(f))
-
     fmask = fmask_rcv.convert('RGB')
     fmask.save('data/mask/'+userimage)
     fmaskread = cv2.imread('data/mask/'+userimage)
@@ -118,6 +118,8 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
 
     inputimage = cv2.imread('data/input/'+userimage)
     originimageread_pil = Image.open('data/origin/'+userimage)
+    save_image_to_gcs(str(user_code), 'origin',
+                      userimage, 'data/origin/'+userimage)
     make_segment(originimageread_pil, 'data/segment/'+userimage)
     sketch_image(userimage, foldername='data/origin/')
     sketch = cv2.imread('data/sketch/'+userimage)
@@ -134,8 +136,6 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
 
     save_image_to_gcs(str(user_code), 'input',
                       userimage, 'data/input/'+userimage)
-    save_image_to_gcs(str(user_code), 'origin',
-                      userimage, 'data/origin/'+userimage)
     save_image_to_gcs(str(user_code), 'rebuild',
                       userimage, 'data/rebuild/'+userimage)
     save_image_to_gcs(str(user_code), 'average',
@@ -143,6 +143,6 @@ def preprocess(user_code, rebuildimage_rcv, originimages_rcv, fmask_rcv, stroke_
     save_image_to_gcs(str(user_code), 'recover',
                       userimage, 'data/recover/'+userimage)
     save_image_to_gcs(str(user_code), 'result', userimage, rebuildimg)
-    remove_image_from_local('', '', '', all=True)
+#    remove_image_from_local('', user_code, '', all=True)
     with open('data/recover/'+userimage, "rb") as f:
         return HttpResponse(f.read(), content_type="image/png")
